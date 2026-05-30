@@ -1,4 +1,4 @@
-# 回声书页
+# 回声书局
 
 基于 `hiring_challenge.pdf` 实现的互动小说平台原型。前端使用 Next.js 15 App Router、React 19、TypeScript、Tailwind CSS v4 和 Framer Motion；数据层使用 Supabase PostgreSQL、RLS 与 Edge Function；部署目标为 Vercel。
 

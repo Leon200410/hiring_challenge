@@ -3,7 +3,7 @@ import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
-  title: "回声书页 | 互动小说平台",
+  title: "回声书局 | 互动小说平台",
   description: "一个面向沉浸式互动叙事的阅读平台。",
 };
 

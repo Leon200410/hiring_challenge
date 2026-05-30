@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowUpRight, Clock } from "lucide-react";
 import type { Novel } from "@/lib/types";
 
 type NovelShelfProps = {
@@ -12,50 +11,45 @@ type NovelShelfProps = {
 
 export function NovelShelf({ novels }: NovelShelfProps) {
   return (
-    <div className="grid gap-5 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-x-8 gap-y-16 sm:grid-cols-2 lg:grid-cols-3">
       {novels.map((novel, index) => (
         <Link key={novel.id} href={`/novels/${novel.slug}`} className="group block">
           <motion.article
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.45, delay: index * 0.08 }}
-            whileHover={{ y: -4 }}
-            className="grid min-h-72 overflow-hidden rounded-lg border border-white/12 bg-white/[0.06] shadow-2xl shadow-black/20 backdrop-blur md:grid-cols-[15rem_1fr] light:border-ink/10 light:bg-white/60"
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: index * 0.05 }}
+            className="flex flex-col"
           >
-            <div className="relative min-h-72 overflow-hidden bg-ink">
+            {/* Image Section */}
+            <div className="relative mb-6 aspect-[4/5] w-full overflow-hidden bg-ink/5 light:bg-paper/30">
               <Image
                 src={novel.coverPath}
                 alt={`${novel.title} 封面`}
                 fill
-                sizes="(min-width: 768px) 240px, 100vw"
-                className="object-cover transition duration-700 group-hover:scale-105"
-                priority={index === 0}
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                priority={index < 3}
               />
             </div>
-            <div className="flex flex-col justify-between p-5">
-              <div>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm text-ember">{novel.author}</p>
-                    <h3 className="mt-2 text-2xl font-semibold text-paper light:text-ink">
-                      {novel.title}
-                    </h3>
-                  </div>
-                  <ArrowUpRight
-                    aria-hidden="true"
-                    className="mt-1 shrink-0 text-paper/45 transition group-hover:text-ember light:text-ink/45"
-                    size={20}
-                  />
-                </div>
-                <p className="mt-4 line-clamp-5 text-sm leading-7 text-paper/68 light:text-ink/70">
-                  {novel.summary}
-                </p>
+
+            {/* Text Section */}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-3 text-xs font-medium tracking-wider text-ember uppercase">
+                <span>{novel.author}</span>
+                <span className="h-px w-4 bg-ember/40"></span>
+                <span className="text-paper/40 light:text-ink/40">
+                  {novel.readingMinutes} MIN READ
+                </span>
               </div>
-              <div className="mt-8 flex items-center gap-2 text-sm text-paper/58 light:text-ink/60">
-                <Clock aria-hidden="true" size={16} />
-                约 {novel.readingMinutes} 分钟
-              </div>
+              
+              <h3 className="mt-3 text-2xl font-semibold leading-snug tracking-tight text-paper transition-colors group-hover:text-white light:text-ink light:group-hover:text-black">
+                {novel.title}
+              </h3>
+              
+              <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-paper/60 light:text-ink/60">
+                {novel.summary}
+              </p>
             </div>
           </motion.article>
         </Link>

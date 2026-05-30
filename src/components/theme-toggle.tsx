@@ -25,7 +25,7 @@ export function ThemeToggle() {
       type="button"
       onClick={toggleTheme}
       title={isDark ? "切换到浅色模式" : "切换到暗色模式"}
-      className="inline-flex size-10 items-center justify-center rounded-lg border border-white/15 bg-white/8 text-paper shadow-sm backdrop-blur transition hover:border-ember/70 hover:text-ember light:border-ink/15 light:bg-white/70 light:text-ink"
+      className="inline-flex cursor-pointer size-10 items-center justify-center rounded-lg border border-white/15 bg-white/8 text-paper shadow-sm backdrop-blur transition hover:border-ember/70 hover:text-ember light:border-ink/15 light:bg-white/70 light:text-ink"
     >
       <Icon aria-hidden="true" size={18} />
       <span className="sr-only">{isDark ? "切换到浅色模式" : "切换到暗色模式"}</span>

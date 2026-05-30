@@ -13,7 +13,7 @@ export function SiteHeader() {
           <span className="inline-flex size-9 items-center justify-center rounded-lg bg-ember text-ink">
             <Library aria-hidden="true" size={18} />
           </span>
-          回声书页
+          回声书局
         </Link>
         <div className="flex items-center gap-2">
           <Link
