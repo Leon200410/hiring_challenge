@@ -132,7 +132,7 @@ export function ReaderClient({ novel, scenes }: ReaderClientProps) {
       </header>
 
       <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-4 pt-8 sm:px-6">
-        <section className="relative flex flex-1 items-center overflow-y-auto">
+        <section className="relative flex flex-1 items-center overflow-y-auto overflow-x-hidden">
           <AnimatePresence mode="wait" custom={direction}>
             {isEnding ? (
               <motion.div
