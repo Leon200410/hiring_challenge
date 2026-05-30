@@ -1,5 +1,8 @@
+import { Suspense } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { NovelShelf } from "@/components/novel-shelf";
+import { NovelShelfSkeleton } from "@/components/novel-shelf-skeleton";
 import { SetupNotice } from "@/components/setup-notice";
 import { getNovels } from "@/lib/story-api";
 import { HeroContent } from "@/components/hero-content";
@@ -8,9 +11,33 @@ import { FinalCta } from "@/components/final-cta";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+async function HeroNovelButton() {
+  const novelsResult = await getNovels();
+  const novel = novelsResult.data?.[0];
+  
+  if (!novel) return null;
+  
+  return (
+    <Link
+      href={`/novels/${novel.slug}`}
+      className="inline-flex h-14 items-center rounded-full border border-white/20 px-8 text-base font-medium text-paper transition hover:border-white/40 hover:bg-white/5 light:border-ink/20 light:text-ink light:hover:border-ink/40 light:hover:bg-ink/5"
+    >
+      今夜精选
+    </Link>
+  );
+}
+
+async function LibraryData() {
   const novelsResult = await getNovels();
   const novels = novelsResult.data ?? [];
+  
+  if (novels.length > 0) {
+    return <NovelShelf novels={novels} />;
+  }
+  return <SetupNotice message={novelsResult.error} />;
+}
+
+export default function Home() {
   const heroCover = "/covers/lending_bg.png";
 
   return (
@@ -32,7 +59,13 @@ export default async function Home() {
         </div>
 
         {/* Hero Content (Client Component for Motion) */}
-        <HeroContent novel={novels[0]} />
+        <HeroContent 
+          secondaryAction={
+            <Suspense fallback={<div className="h-14 w-32 animate-pulse rounded-full bg-white/10 light:bg-black/5" />}>
+              <HeroNovelButton />
+            </Suspense>
+          } 
+        />
       </section>
 
       {/* SUPPORT / THESIS SECTION */}
@@ -52,11 +85,9 @@ export default async function Home() {
             </div>
           </div>
 
-          {novels.length > 0 ? (
-            <NovelShelf novels={novels} />
-          ) : (
-            <SetupNotice message={novelsResult.error} />
-          )}
+          <Suspense fallback={<NovelShelfSkeleton />}>
+            <LibraryData />
+          </Suspense>
         </div>
       </section>
 

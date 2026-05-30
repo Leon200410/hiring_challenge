@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ArrowDown } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
-import type { Novel } from "@/lib/types";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -26,7 +25,7 @@ const itemVariants: Variants = {
   },
 };
 
-export function HeroContent({ novel }: { novel?: Novel }) {
+export function HeroContent({ secondaryAction }: { secondaryAction?: React.ReactNode }) {
   return (
     <div className="relative z-10 w-full max-w-6xl px-4 pb-20 sm:px-6 md:pb-32">
       <motion.div
@@ -60,14 +59,7 @@ export function HeroContent({ novel }: { novel?: Novel }) {
             浏览书架
             <ArrowDown aria-hidden="true" size={18} className="opacity-70" />
           </Link>
-          {novel ? (
-            <Link
-              href={`/novels/${novel.slug}`}
-              className="inline-flex h-14 items-center rounded-full border border-white/20 px-8 text-base font-medium text-paper transition hover:border-white/40 hover:bg-white/5 light:border-ink/20 light:text-ink light:hover:border-ink/40 light:hover:bg-ink/5"
-            >
-              今夜精选
-            </Link>
-          ) : null}
+          {secondaryAction}
         </motion.div>
       </motion.div>
     </div>
