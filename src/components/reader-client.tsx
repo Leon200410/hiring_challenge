@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
+  Loader2,
   RotateCcw,
   Volume2,
   VolumeX,
@@ -23,9 +24,12 @@ export function ReaderClient({ novel, scenes }: ReaderClientProps) {
   const [pageIndex, setPageIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const manualCancelRef = useRef(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const autoReadRef = useRef(false);
-  const cancelCurrentRef = useRef<(() => void) | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+  const playbackTokenRef = useRef(0);
+  const requestControllerRef = useRef<AbortController | null>(null);
   const isEnding = pageIndex >= scenes.length;
   const scene = scenes[pageIndex];
 
@@ -65,79 +69,137 @@ export function ReaderClient({ novel, scenes }: ReaderClientProps) {
     return () => window.removeEventListener("keydown", onKeyDown);
   });
 
-  const playCurrentScene = useCallback(() => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      return;
+  const releaseAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
+      audioRef.current.pause();
+      audioRef.current.removeAttribute("src");
+      audioRef.current.load();
+      audioRef.current = null;
     }
-    
+
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+  }, []);
+
+  const cancelSpeech = useCallback(() => {
+    playbackTokenRef.current += 1;
+    requestControllerRef.current?.abort();
+    requestControllerRef.current = null;
+    releaseAudio();
+    setIsSpeaking(false);
+    setIsLoadingAudio(false);
+  }, [releaseAudio]);
+
+  const playCurrentScene = useCallback(async () => {
     const currentScene = scenes[pageIndex];
-    if (!currentScene) return;
+    if (!currentScene || isEnding) return;
 
-    if (cancelCurrentRef.current) {
-      cancelCurrentRef.current();
-    }
-    
-    let isCancelled = false;
-    cancelCurrentRef.current = () => {
-      isCancelled = true;
-    };
+    cancelSpeech();
 
-    manualCancelRef.current = true;
-    window.speechSynthesis.cancel();
-    manualCancelRef.current = false;
-    
-    const utterance = new SpeechSynthesisUtterance(`${currentScene.title}。${currentScene.body}`);
-    utterance.lang = "zh-CN";
-    utterance.rate = 0.92;
-    utterance.pitch = 0.96;
-    utterance.onend = () => {
-      if (!isCancelled && !manualCancelRef.current) {
-        autoReadRef.current = true;
-        goNext();
-      } else {
-        setIsSpeaking(false);
-      }
-    };
-    utterance.onerror = () => {
-      isCancelled = true;
-      setIsSpeaking(false);
-    };
-    window.speechSynthesis.speak(utterance);
+    const playbackToken = playbackTokenRef.current + 1;
+    playbackTokenRef.current = playbackToken;
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
     setIsSpeaking(true);
-  }, [pageIndex, scenes, goNext]);
+    setIsLoadingAudio(true);
+
+    try {
+      const response = await fetch("/api/tts", {
+        body: JSON.stringify({
+          text: `${currentScene.title.trim()}。${currentScene.body.trim()}`,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as
+          | { error?: string }
+          | null;
+        throw new Error(data?.error || "Unable to synthesize speech.");
+      }
+
+      const audioBlob = await response.blob();
+      if (controller.signal.aborted || playbackTokenRef.current !== playbackToken) {
+        return;
+      }
+
+      setIsLoadingAudio(false);
+
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audioUrlRef.current = audioUrl;
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        if (playbackTokenRef.current !== playbackToken) return;
+
+        releaseAudio();
+        setIsSpeaking(false);
+
+        if (autoReadRef.current) {
+          goNext();
+        }
+      };
+
+      audio.onerror = () => {
+        if (playbackTokenRef.current !== playbackToken) return;
+
+        console.error("Failed to play Doubao TTS audio.");
+        autoReadRef.current = false;
+        releaseAudio();
+        setIsSpeaking(false);
+        setIsLoadingAudio(false);
+      };
+
+      await audio.play();
+    } catch (error) {
+      if (controller.signal.aborted || playbackTokenRef.current !== playbackToken) {
+        return;
+      }
+
+      console.error("Doubao TTS failed", error);
+      autoReadRef.current = false;
+      releaseAudio();
+      setIsSpeaking(false);
+      setIsLoadingAudio(false);
+    } finally {
+      if (requestControllerRef.current === controller) {
+        requestControllerRef.current = null;
+      }
+    }
+  }, [cancelSpeech, goNext, isEnding, pageIndex, releaseAudio, scenes]);
 
   useEffect(() => {
     if (autoReadRef.current && !isEnding) {
-      playCurrentScene();
+      void playCurrentScene();
     } else {
-      if (cancelCurrentRef.current) {
-        cancelCurrentRef.current();
-      }
-      manualCancelRef.current = true;
-      window.speechSynthesis?.cancel();
+      cancelSpeech();
       setIsSpeaking(false);
       autoReadRef.current = false;
     }
-  }, [playCurrentScene, isEnding]);
+  }, [cancelSpeech, playCurrentScene, isEnding]);
+
+  useEffect(() => {
+    return () => cancelSpeech();
+  }, [cancelSpeech]);
 
   function toggleSpeech() {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      return;
-    }
-
     if (isSpeaking) {
-      if (cancelCurrentRef.current) {
-        cancelCurrentRef.current();
-      }
-      manualCancelRef.current = true;
       autoReadRef.current = false;
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
+      cancelSpeech();
       return;
     }
 
     autoReadRef.current = true;
-    playCurrentScene();
+    void playCurrentScene();
   }
 
   const variants = {
@@ -264,7 +326,9 @@ export function ReaderClient({ novel, scenes }: ReaderClientProps) {
               className="inline-flex size-12 items-center justify-center rounded-lg border border-white/16 text-paper transition hover:border-ember hover:text-ember disabled:cursor-not-allowed disabled:opacity-35 light:border-ink/14 light:text-ink"
               title={isSpeaking ? "停止朗读" : "朗读当前场景"}
             >
-              {isSpeaking ? (
+              {isLoadingAudio ? (
+                <Loader2 aria-hidden="true" size={19} className="animate-spin" />
+              ) : isSpeaking ? (
                 <VolumeX aria-hidden="true" size={19} />
               ) : (
                 <Volume2 aria-hidden="true" size={19} />

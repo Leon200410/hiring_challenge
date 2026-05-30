@@ -24,7 +24,15 @@ npm run dev
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+# 如果没有新版 API Key，可改用旧版控制台凭据：
+DOUBAO_TTS_APP_ID=your-doubao-tts-app-id
+DOUBAO_TTS_ACCESS_KEY=your-doubao-tts-access-token
+DOUBAO_TTS_RESOURCE_ID=volc.service_type.10029
+DOUBAO_TTS_SPEAKER=zh_female_sajiaonvyou_moon_bigtts
+DOUBAO_TTS_SAMPLE_RATE=24000
 ```
+
+阅读器 TTS 使用火山引擎豆包语音合成大模型 V3 HTTP 接口，由 Next.js `/api/tts` 在服务端合成 MP3，前端不会暴露密钥。新版控制台推荐配置 `DOUBAO_TTS_API_KEY`；如果你只有旧版控制台的 AppID 和 Access Token，可改用 `DOUBAO_TTS_APP_ID` 与 `DOUBAO_TTS_ACCESS_KEY`。
 
 ## Supabase 设置
 
@@ -53,6 +61,9 @@ psql "$DATABASE_URL" -f supabase/seed.sql
 1. 将仓库导入 Vercel
 2. 配置 `NEXT_PUBLIC_SUPABASE_URL`
 3. 配置 `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-4. 使用默认 Next.js 构建即可
+4. 配置 `DOUBAO_TTS_API_KEY`
+5. 配置 `DOUBAO_TTS_RESOURCE_ID`
+6. 配置 `DOUBAO_TTS_SPEAKER`
+7. 使用默认 Next.js 构建即可
 
 封面图保存在 `public/covers/midnight-library.png`，数据库中的 `cover_path` 指向该公开路径。
