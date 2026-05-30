@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *));
+
+@theme {
+  --color-page: #0e1016;
+  --color-paper: #f6efe3;
+  --color-ember: #d8a243;
+  --color-fern: #66a182;
+  --color-wine: #8e3f54;
+  --color-ink: #161313;
+}
+
+:root {
+  color-scheme: dark;
+  background: #0e1016;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 15% 12%, rgba(216, 162, 67, 0.14), transparent 26rem),
+    radial-gradient(circle at 86% 22%, rgba(102, 161, 130, 0.14), transparent 24rem),
+    linear-gradient(135deg, #0e1016 0%, #171116 50%, #0b1010 100%);
+  color: #f6efe3;
+  font-family:
+    "Inter", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui,
+    sans-serif;
+}
+
+body::selection {
+  background: rgba(216, 162, 67, 0.38);
+}
+
+.light body {
+  color: #161313;
+  background:
+    radial-gradient(circle at 15% 12%, rgba(216, 162, 67, 0.22), transparent 26rem),
+    radial-gradient(circle at 86% 22%, rgba(102, 161, 130, 0.16), transparent 24rem),
+    linear-gradient(135deg, #fffaf0 0%, #f0eadf 55%, #e8f1eb 100%);
+}
+
+.reader-text {
+  text-wrap: pretty;
+}
