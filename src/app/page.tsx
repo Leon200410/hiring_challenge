@@ -70,9 +70,6 @@ export default async function Home() {
                 今夜可读
               </h2>
             </div>
-            <p className="max-w-xl text-sm leading-7 text-paper/62 light:text-ink/62">
-              书架内容来自 Supabase；部署后即可通过数据库继续扩展新的互动作品。
-            </p>
           </div>
 
           {novels.length > 0 ? (
