@@ -18,7 +18,7 @@ export function NovelShelf({ novels }: NovelShelfProps) {
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: index * 0.05 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const, delay: index * 0.05 }}
             className="flex flex-col"
           >
             {/* Image Section */}

@@ -10,7 +10,7 @@ export function FinalCta() {
         initial={{ opacity: 0, scale: 0.95, y: 30 }}
         whileInView={{ opacity: 1, scale: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as const }}
         className="mx-auto max-w-4xl text-center"
       >
         <h2 className="text-3xl font-semibold tracking-tight text-paper sm:text-5xl light:text-ink">
