@@ -1,11 +1,9 @@
-import { ArrowRight, BookText, Clock, PenLine } from "lucide-react";
-
 export default function NovelLoading() {
   return (
-    <main className="px-4 pb-20 pt-28 sm:px-6">
-      <section className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[24rem_1fr] lg:items-start animate-pulse">
+    <main className="px-4 pb-20 pt-24 sm:px-6 lg:pt-32">
+      <section className="mx-auto grid max-w-6xl gap-8 sm:gap-12 lg:grid-cols-[24rem_1fr] lg:items-start animate-pulse">
         {/* Cover Skeleton */}
-        <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-white/5 light:bg-black/5" />
+        <div className="relative w-48 aspect-[3/4] sm:w-64 lg:w-full overflow-hidden rounded-lg bg-white/5 light:bg-black/5" />
         
         {/* Content Skeleton */}
         <div className="pt-2">

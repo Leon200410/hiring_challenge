@@ -35,9 +35,9 @@ export default async function NovelPage({ params }: NovelPageProps) {
   const sceneCount = scenesResult.data?.length ?? 0;
 
   return (
-    <main className="px-4 pb-20 pt-28 sm:px-6">
-      <section className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[24rem_1fr] lg:items-start">
-        <div className="relative aspect-[3/4] overflow-hidden rounded-lg border border-white/12 bg-ink shadow-2xl shadow-black/30 light:border-ink/10">
+    <main className="px-4 pb-20 pt-24 sm:px-6 lg:pt-32">
+      <section className="mx-auto grid max-w-6xl gap-8 sm:gap-12 lg:grid-cols-[24rem_1fr] lg:items-start">
+        <div className="relative w-48 aspect-[3/4] sm:w-64 lg:w-full overflow-hidden rounded-lg border border-white/12 bg-ink shadow-2xl shadow-black/30 light:border-ink/10">
           <Image
             src={novel.coverPath}
             alt={`${novel.title} 封面`}

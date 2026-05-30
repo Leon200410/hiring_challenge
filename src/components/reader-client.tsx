@@ -107,18 +107,18 @@ export function ReaderClient({ novel, scenes }: ReaderClientProps) {
   };
 
   return (
-    <main className="min-h-screen px-4 pb-10 pt-24 sm:px-6">
-      <div className="mx-auto flex min-h-[calc(100svh-8rem)] max-w-4xl flex-col">
-        <div className="mb-8">
+    <main className="flex min-h-screen flex-col pb-10">
+      <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-page/80 px-4 py-4 backdrop-blur sm:px-6 light:border-ink/5 light:bg-paper/80">
+        <div className="mx-auto max-w-4xl">
           <div className="mb-4 flex items-center justify-between gap-4 text-sm text-paper/62 light:text-ink/62">
             <Link
               href={`/novels/${novel.slug}`}
-              className="inline-flex items-center gap-2 rounded-lg px-2 py-2 transition hover:bg-white/10 hover:text-paper light:hover:bg-ink/8 light:hover:text-ink"
+              className="inline-flex items-center gap-2 rounded-lg py-1 transition hover:text-paper light:hover:text-ink"
             >
               <ChevronLeft aria-hidden="true" size={17} />
-              {novel.title}
+              <span className="line-clamp-1">{novel.title}</span>
             </Link>
-            <span>{progress}%</span>
+            <span className="shrink-0">{progress}%</span>
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-white/12 light:bg-ink/10">
             <motion.div
@@ -129,8 +129,10 @@ export function ReaderClient({ novel, scenes }: ReaderClientProps) {
             />
           </div>
         </div>
+      </header>
 
-        <section className="relative flex flex-1 items-center">
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-4 pt-8 sm:px-6">
+        <section className="relative flex flex-1 items-center overflow-y-auto">
           <AnimatePresence mode="wait" custom={direction}>
             {isEnding ? (
               <motion.div
