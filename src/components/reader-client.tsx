@@ -11,7 +11,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Novel, Scene } from "@/lib/types";
 
 type ReaderClientProps = {
@@ -23,6 +23,9 @@ export function ReaderClient({ novel, scenes }: ReaderClientProps) {
   const [pageIndex, setPageIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const manualCancelRef = useRef(false);
+  const autoReadRef = useRef(false);
+  const cancelCurrentRef = useRef<(() => void) | null>(null);
   const isEnding = pageIndex >= scenes.length;
   const scene = scenes[pageIndex];
 
@@ -32,6 +35,21 @@ export function ReaderClient({ novel, scenes }: ReaderClientProps) {
     }
     return Math.round((Math.min(pageIndex + 1, scenes.length) / scenes.length) * 100);
   }, [pageIndex, scenes.length]);
+
+  const goNext = useCallback(() => {
+    setDirection(1);
+    setPageIndex((current) => Math.min(current + 1, scenes.length));
+  }, [scenes.length]);
+
+  const goPrev = useCallback(() => {
+    setDirection(-1);
+    setPageIndex((current) => Math.max(current - 1, 0));
+  }, []);
+
+  const restart = useCallback(() => {
+    setDirection(-1);
+    setPageIndex(0);
+  }, []);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -47,25 +65,60 @@ export function ReaderClient({ novel, scenes }: ReaderClientProps) {
     return () => window.removeEventListener("keydown", onKeyDown);
   });
 
+  const playCurrentScene = useCallback(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      return;
+    }
+    
+    const currentScene = scenes[pageIndex];
+    if (!currentScene) return;
+
+    if (cancelCurrentRef.current) {
+      cancelCurrentRef.current();
+    }
+    
+    let isCancelled = false;
+    cancelCurrentRef.current = () => {
+      isCancelled = true;
+    };
+
+    manualCancelRef.current = true;
+    window.speechSynthesis.cancel();
+    manualCancelRef.current = false;
+    
+    const utterance = new SpeechSynthesisUtterance(`${currentScene.title}。${currentScene.body}`);
+    utterance.lang = "zh-CN";
+    utterance.rate = 0.92;
+    utterance.pitch = 0.96;
+    utterance.onend = () => {
+      if (!isCancelled && !manualCancelRef.current) {
+        autoReadRef.current = true;
+        goNext();
+      } else {
+        setIsSpeaking(false);
+      }
+    };
+    utterance.onerror = () => {
+      isCancelled = true;
+      setIsSpeaking(false);
+    };
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+  }, [pageIndex, scenes, goNext]);
+
   useEffect(() => {
-    window.speechSynthesis?.cancel();
-    setIsSpeaking(false);
-  }, [pageIndex]);
-
-  function goNext() {
-    setDirection(1);
-    setPageIndex((current) => Math.min(current + 1, scenes.length));
-  }
-
-  function goPrev() {
-    setDirection(-1);
-    setPageIndex((current) => Math.max(current - 1, 0));
-  }
-
-  function restart() {
-    setDirection(-1);
-    setPageIndex(0);
-  }
+    if (autoReadRef.current && !isEnding) {
+      playCurrentScene();
+    } else {
+      if (cancelCurrentRef.current) {
+        cancelCurrentRef.current();
+      }
+      manualCancelRef.current = true;
+      window.speechSynthesis?.cancel();
+      setIsSpeaking(false);
+      autoReadRef.current = false;
+    }
+  }, [playCurrentScene, isEnding]);
 
   function toggleSpeech() {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
@@ -73,23 +126,18 @@ export function ReaderClient({ novel, scenes }: ReaderClientProps) {
     }
 
     if (isSpeaking) {
+      if (cancelCurrentRef.current) {
+        cancelCurrentRef.current();
+      }
+      manualCancelRef.current = true;
+      autoReadRef.current = false;
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
       return;
     }
 
-    if (!scene) {
-      return;
-    }
-
-    const utterance = new SpeechSynthesisUtterance(`${scene.title}。${scene.body}`);
-    utterance.lang = "zh-CN";
-    utterance.rate = 0.92;
-    utterance.pitch = 0.96;
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-    window.speechSynthesis.speak(utterance);
-    setIsSpeaking(true);
+    autoReadRef.current = true;
+    playCurrentScene();
   }
 
   const variants = {
